@@ -1,4 +1,4 @@
-{info:title=Info for redirected users}This was first published on my blog at controlfreak.net in March 2011 but since December 2016 has redirected to this GitHub page{info}
+_(This was first published on my blog at controlfreak.net in March 2011 but since December 2016 has redirected to this GitHub page)_
 
 <h3>Introduction</h3>
 
