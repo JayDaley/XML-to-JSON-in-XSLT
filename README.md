@@ -26,17 +26,23 @@ There are two obvious different ways in which a developer might manipulate the r
 
 Style 1 is where the where the developer knows what JSON to expect and will be addressing elements and attributes by name and pulling out the values.  For these the easiest implementation has the element name as a key for an object that contains the entire element contents and attributes like this
 
-<pre lang="javascript">{ element : { child elements , "$" : text, attributes } }</pre>
+```javascript
+{ element : { child elements , "$" : text, attributes } }
+```
 
 Style 2 is where the element and attribute names are not well known and need to be discovered.  We could use the convention of the translation to allow the developer to quickly discover element, attributes and content or we could using well known keys to guarantee that these parts can be discovered quickly like this
 
-<pre lang="javascript">{ "e" : element, "c" : { child elements }, "$" : text, "@" : { attributes } }</pre>
+```javascript
+{ "e" : element, "c" : { child elements }, "$" : text, "@" : { attributes } }
+```
 
 These two styles are not entirely clear cut as we could mix and match some choices between the two, though doing so may not provide any benefits, like these examples
 
-<pre lang="javascript">{ element : { child elements }, "$" : text, attributes }
+```javascript
+{ element : { child elements }, "$" : text, attributes }
 { element : { child elements }, "$" : text, "@" : {attributes} } 
-{ element : { child elements, "@" : {attributes}  }, "$" : text}</pre>
+{ element : { child elements, "@" : {attributes}  }, "$" : text}
+```
 
 For this article I will concentrate only on style 1 and style 2, but implementing a mixed style should be pretty easy using the code supplied.
 
@@ -52,41 +58,56 @@ To complicate things there are a number of characteristics of your XML, which if
 
 The choice here is between element names becoming keys or element names becoming the value of a well known key (like "e").  Here is an example of an element and the two representations:
 
-<pre lang="xml"><myelement>...</myelement></pre>
+```xml
+<myelement>...</myelement>
+```
 
 in style 1 that translates to
 
-<pre lang="javascript">{ "myelement" : ... }</pre>
+```javascript
+{ "myelement" : ... }
+```
 
 using this XSLT
 
-<pre lang="xml"><xsl:text>{ "</xsl:text>
+```xml
+<xsl:text>{ "</xsl:text>
 <xsl:value-of select="name()"/>
-<xsl:text>" :  </xsl:text></pre>
+<xsl:text>" :  </xsl:text>
+```
 
 in style 2 that translates to
 
-<pre lang="javascript">{ "e" : "myelement", ... }</pre>
+```javascript
+{ "e" : "myelement", ... }
+```
 
 produced by this XSLT 
 
-<pre lang="xml"><xsl:text>{ "e" : "</xsl:text>
+```xml
+<xsl:text>{ "e" : "</xsl:text>
 <xsl:value-of select="name()"/>
-<xsl:text>" }</xsl:text></pre>
+<xsl:text>" }</xsl:text>
+```
 
 <h3>Empty elements</h3>
 
 Empty elements are pretty straightforward as their contents can be represented with a null.  Take the following example
 
-<pre lang="xml"><empty /></pre>
+```xml
+<empty />
+```
 
 in style 1 that translates to
 
-<pre lang="javascript">{ "empty" : null }</pre>
+```javascript
+{ "empty" : null }
+```
 
 produced by this XSLT
 
-<pre lang="xml"><xsl:template match="node()">
+```xml
+<xsl:template match="node()">
     <xsl:text>{ "</xsl:text>
     <xsl:value-of select="name()"/>
     <xsl:text>" : </xsl:text>
@@ -94,15 +115,19 @@ produced by this XSLT
         <xsl:text>null</xsl:text>
     </xsl:if>
     <xsl:text> }</xsl:text>
-</xsl:template></pre>
+</xsl:template>
+```
 
 in style 2 the simplest thing to do is just omit whatever keys hold the content.  If you insist on identifying empty elements with well known keys then it tranlates to (though you need to choose whether to make null the value for "c" or "$" or both)
 
-<pre lang="javascript">{ "e" : "empty", "c" : null }</pre>
+```javascript
+{ "e" : "empty", "c" : null }
+```
 
 produced by this XSLT
 
-<pre lang="xml"><xsl:template match="node()">
+```xml
+<xsl:template match="node()">
     <xsl:text>{ "e" : "</xsl:text>
     <xsl:value-of select="name()"/>
     <xsl:text>" , "c" : </xsl:text>
@@ -110,21 +135,27 @@ produced by this XSLT
         <xsl:text>null</xsl:text>
     </xsl:if>
     <xsl:text> }</xsl:text>
-</xsl:template></pre>
+</xsl:template>
+```
 
 <h3>Single child elements</h3>
 
 Child elements become nested objects.  So with this example:
 
-<pre lang="xml"><outer><inner/></outer></pre>
+```xml
+<outer><inner/></outer>
+```
 
 in style 1 that translates to
 
-<pre lang="javascript">{ "outer" : { "inner" : null } }</pre>
+```javascript
+{ "outer" : { "inner" : null } }
+```
 
 produced by the following XSLT
 
-<pre lang="xml"><xsl:template match="node()">
+```xml
+<xsl:template match="node()">
     <xsl:text>{ "</xsl:text>
     <xsl:value-of select="name()"/>
     <xsl:text>" : </xsl:text>
@@ -137,15 +168,19 @@ produced by the following XSLT
         </xsl:otherwise>
     </xsl:choose>        
     <xsl:text> }</xsl:text>
-</xsl:template></pre>
+</xsl:template>
+```
 
 in style 2 using the new key of "c" for "child elements" that translates to
 
-<pre lang="javascript">{ "e" : "outer", "c" : { "e" : "inner", "c" : null } }</pre>
+```javascript
+{ "e" : "outer", "c" : { "e" : "inner", "c" : null } }
+```
 
 produced by the following XSLT
 
-<pre lang="xml"><xsl:template match="node()">
+```xml
+<xsl:template match="node()">
     <xsl:text>{ "e" : "</xsl:text>
     <xsl:value-of select="name()"/>
     <xsl:text>" , "c" : </xsl:text>
@@ -158,7 +193,8 @@ produced by the following XSLT
         </xsl:otherwise>
     </xsl:choose>
     <xsl:text> }</xsl:text>
-</xsl:template></pre>
+</xsl:template>
+```
 
 <h3>Single text</h3>
 
@@ -166,31 +202,41 @@ XML has two types of text, parsed and unparsed character data, but in XSLT that 
 
 In style 1 we could simplify text only nodes by making the text the value of the element name as key.  Take this example
 
-<pre lang="xml"><textelement>some text</textelement></pre>
+```xml
+<textelement>some text</textelement>
+```
 
 in style 1 the simplified version translates as
 
-<pre lang="javascript">{ "textelement" : "some text" }</pre>
+```javascript
+{ "textelement" : "some text" }
+```
 
 produced by the following XSLT
 
-<pre lang="xml"><xsl:text>{ "</xsl:text>
+```xml
+<xsl:text>{ "</xsl:text>
 <xsl:value-of select="name()"/>
 <xsl:text>" :  "</xsl:text>
 <xsl:value-of select="."/>
-<xsl:text>" }</xsl:text></pre>
+<xsl:text>" }</xsl:text>
+```
 
 in style 2 using the well known of "$" translates to
 
-<pre lang="javascript">{ "e" : "textelement", "$" : "some text" }</pre>
+```javascript
+{ "e" : "textelement", "$" : "some text" }
+```
 
 produced by the following XSLT
 
-<pre lang="xml"><xsl:text>{ "e" : "</xsl:text>
+```xml
+<xsl:text>{ "e" : "</xsl:text>
 <xsl:value-of select="name()"/>
 <xsl:text>" , "$" : "</xsl:text>
 <xsl:value-of select="."/>
-<xsl:text>" }</xsl:text></pre>
+<xsl:text>" }</xsl:text>
+```
 
 <h3>Multiple text</h3>
 
@@ -200,15 +246,20 @@ Instead the two options to looks at are combine all the text together or represe
 
 For example, the text in
 
-<pre lang="xml"><mytext>First part<inner />second part</mytext></pre>
+```xml
+<mytext>First part<inner />second part</mytext>
+```
 
 can be represented as the text added together into one string
 
-<pre lang="javascript">"First partsecondpart"</pre>
+```javascript
+"First partsecondpart"
+```
 
 produced by the following XSLT
 
-<pre lang="xml"><xsl:template match="*">
+```xml
+<xsl:template match="*">
     <xsl:text>, "$" : "</xsl:text>
     <xsl:apply-templates select="text()"/>
     <xsl:text>"</xsl:text>
@@ -216,15 +267,19 @@ produced by the following XSLT
     
 <xsl:template match="text()">
     <xsl:value-of select="."/>
-</xsl:template></pre>
+</xsl:template>
+```
 
 or in a list of the different parts
 
-<pre lang="javascript">[ "First part", "second part" ]</pre>
+```javascript
+[ "First part", "second part" ]
+```
 
 produced by the following XSLT
 
-<pre lang="xml"><xsl:template match="*">
+```xml
+<xsl:template match="*">
     <xsl:text>, "$" : [ </xsl:text>
     <xsl:apply-templates select="text()"/>
     <xsl:text> ]</xsl:text>
@@ -237,17 +292,21 @@ produced by the following XSLT
     <xsl:if test="position() != last()">
         <xsl:text>, </xsl:text>
     </xsl:if>        
-</xsl:template></pre>
+</xsl:template>
+```
 
 <h3>Multiple numbers, booleans and text</h3>
 
-XML stores represents everything as text but JSON represents numbers, booleans and text differently.  For example
+XML represents everything as text but JSON represents numbers, booleans and text differently.  For example
 
-<pre lang="javascript">{ "number" : 1, "boolean" : true, "text" : "text" }</pre>
+```javascript
+{ "number" : 1, "boolean" : true, "text" : "text" }
+```
 
 produced by the following XSLT
 
-<pre lang="xml"><!--  This is the template for text() referred to in later code -->
+```xml
+<!--  This is the template for text() referred to in later code -->
 
 <xsl:template match="text()">
     <xsl:variable name="t" select="." />
@@ -270,7 +329,8 @@ produced by the following XSLT
     <xsl:if test="position() != last()">
         <xsl:text>, </xsl:text>
     </xsl:if>        
-</xsl:template></pre>
+</xsl:template>
+```
 
 <h3>Multiple child elements - ordered</h3>
 
@@ -278,20 +338,25 @@ The examples above are pretty simplistic and it's unlikely anyone will be transl
 
 Some applications use ordered elements, in which case a JSON list has to be used.  Take the same example as before
 
-<pre lang="xml"><outer>
+```xml
+<outer>
     <aa><in1 /></aa>
     <aa><in2 /></aa>
     <bb />
-</outer></pre>
+</outer>
+```
 
 in style 1 this translates to
 
-<pre lang="javascript">{ "outer" : [ { "aa" : { "in1" : null } }, { "aa" : { "in2" : null } }, 
-{ "bb" : null } ] }</pre>
+```javascript
+{ "outer" : [ { "aa" : { "in1" : null } }, { "aa" : { "in2" : null } }, 
+{ "bb" : null } ] }
+```
 
 produced by this XSLT
 
-<pre lang="xml"><xsl:template match="*">
+```xml
+<xsl:template match="*">
     <xsl:text>{ "</xsl:text>
     <xsl:value-of select="name()"/>
     <xsl:text>" : </xsl:text>
@@ -313,17 +378,21 @@ produced by this XSLT
     <xsl:if test="position() != last()">
         <xsl:text>, </xsl:text>
     </xsl:if>
-</xsl:template></pre>
+</xsl:template>
+```
 
 in style 2 we also use a list, which translates to
 
-<pre lang="javascript">{ "e" : "outer", "c" : [ { "e" : "aa", "c" : { "e" : "in1" } }, 
+```javascript
+{ "e" : "outer", "c" : [ { "e" : "aa", "c" : { "e" : "in1" } }, 
 { "e" : "aa", "c" : { "e" : "in2" } }, 
-{ "e" : "bb" } ] }</pre>
+{ "e" : "bb" } ] }
+```
 
 produced by this XSLT
 
-<pre lang="xml"><xsl:template match="*">
+```xml
+<xsl:template match="*">
     <xsl:text>{ "e" : "</xsl:text>
     <xsl:value-of select="name()"/>
     <xsl:text>"</xsl:text>
@@ -344,7 +413,8 @@ produced by this XSLT
     <xsl:if test="position() != last()">
         <xsl:text>, </xsl:text>
     </xsl:if>
-</xsl:template></pre>
+</xsl:template>
+```
 
 <h3>Multiple child elements, numbers, booleans and text - ordered</h3>
 
@@ -356,11 +426,14 @@ If the ordering is to be preserved then we create an ordered list of all of the 
 
 using element names as keys ends up as something like
 
-<pre lang="javascript">{ "p" : [ "First ", { "em" : "Second" }, 3 ] }</pre>
+```javascript
+{ "p" : [ "First ", { "em" : "Second" }, 3 ] }
+```
 
 produced by the following XSLT
 
-<pre lang="xml"><xsl:template match="*">
+```xml
+<xsl:template match="*">
     <xsl:text>{ "</xsl:text>
     <xsl:value-of select="name()"/>
     <xsl:text>" : </xsl:text>
@@ -384,15 +457,19 @@ produced by the following XSLT
     </xsl:if>
 </xsl:template>
 
-<!-- assumes the template for text() is present here --></pre>
+<!-- assumes the template for text() is present here -->
+```
 
 using well known keys is slightly different from the preceding examples because neither "c" nor "$" is correct as a well known key since one list may have both children and text, so we redefine "c" to mean contents when dealing with ordered content.
 
-<pre lang="javascript">{ "e" : "p", "c" : [ "First", { "e" : "em", "$" : "Second" }, 3 ] }</pre>
+```javascript
+{ "e" : "p", "c" : [ "First", { "e" : "em", "$" : "Second" }, 3 ] }
+```
 
 produced by this XSLT
 
-<pre lang="xml"><xsl:template match="*">
+```xml
+<xsl:template match="*">
     <xsl:text>{ "e" : "</xsl:text>
     <xsl:value-of select="name()"/>
     <xsl:text>"</xsl:text>
@@ -414,38 +491,48 @@ produced by this XSLT
     </xsl:if>
 </xsl:template>
 
-<!-- assumes the template for text() is present here --></pre>
+<!-- assumes the template for text() is present here -->
+```
 
 <h3>Multiple child elements - unordered</h3>
 
 In style 1 encoding this in JSON is not as simple as it seems.  Take the following example
 
-<pre lang="xml"><outer><aa /><bb /></outer></pre>
+```xml
+<outer><aa /><bb /></outer>
+```
 
 we can just list the child elements as key value pairs like this
 
-<pre lang="javascript">{ "outer" : { "aa" : null, "bb" : null } }</pre>
+```javascript
+{ "outer" : { "aa" : null, "bb" : null } }
+```
 
 but that then runs into a problem when there are multiple child elements with the same name.  As mentioned above we could have duplicate keys but that would break most libraries, so an alternative translation is required that uses one element name and list of the contents of each of the element.  Solving this in XSLT is a hard problem that thankfully others have solved as shown in the XSLT below.
 
 So this example
 
-<pre lang="xml"><outer>
+```xml
+<outer>
     <aa><in1 /></aa>
     <aa><in2 /></aa>
     <bb />
-</outer></pre>
+</outer>
+```
 
 translates to
 
-<pre lang="javascript">{ "outer" :  { "aa" : [ { "in1" : null }, 
-{ "in2", null } ], "bb" : null } }</pre>
+```javascript
+{ "outer" :  { "aa" : [ { "in1" : null }, 
+{ "in2", null } ], "bb" : null } }
+```
 
 produced by this XSLT
 
 NOTE:  The key of <code lang="xml">concat(generate-id(..),'/',name())</code> is chosen because when we search for the key want to only retrieve elements with the same name <em>and</em> the same parent, which is what the <code lang="xml">generate-id(..)</code> provides by uniquely identifying that parent.
 
-<pre lang="xml"><xsl:key name="names" match="*" use="concat(generate-id(..),'/',name())"/>
+```xml
+<xsl:key name="names" match="*" use="concat(generate-id(..),'/',name())"/>
 
 <xsl:template match="/">
     <xsl:text>{ </xsl:text>
@@ -497,12 +584,15 @@ NOTE:  The key of <code lang="xml">concat(generate-id(..),'/',name())</code> is 
     <xsl:if test="position() != last()">
         <xsl:text>, </xsl:text>
     </xsl:if>
-</xsl:template></pre>
+</xsl:template>
+```
 
 In style 2 there's no problem at all with multiple child elements with the name because the element name is within the object, not a key to the object.  However there is another problem, which is that each object must have its own key, so with the same example the following representation is not legal in JSON
 
-<pre lang="javascript">{ "e" : "outer", "c" : { { "e" : "aa", "c" : { "e" : "in1" } }, 
-{ "e" : "aa", "c" : { "e" : "in2" } }, { "e" : "bb" } } }</pre>
+```javascript
+{ "e" : "outer", "c" : { { "e" : "aa", "c" : { "e" : "in1" } }, 
+{ "e" : "aa", "c" : { "e" : "in2" } }, { "e" : "bb" } } }
+```
 
 we get around this by using a list to hold the objects, at which point it becomes an ordered list so best use the code shown earlier.
 
@@ -510,22 +600,27 @@ we get around this by using a list to hold the objects, at which point it become
 
 Take the following example if ordering is lost in favour of grouping, then
 
-<pre lang="xml"><outer>
+```xml
+<outer>
     <aa>1<i1>in</i1>2</aa>
     <bb />
     <aa><i2 /></aa>
     <bb>false</bb>
     <cc />
-</outer></pre>
+</outer>
+```
 
 in style 1 this translates to
 
-<pre lang="javascript">{ "outer" : { "aa" : [ { "i1" : { "$" : "in" }, "$" : [ 1, 2 ] }, 
-{ "i2" : null } ], "bb" : [ null, { "$" : false } ], "cc" : null } }</pre>
+```javascript
+{ "outer" : { "aa" : [ { "i1" : { "$" : "in" }, "$" : [ 1, 2 ] }, 
+{ "i2" : null } ], "bb" : [ null, { "$" : false } ], "cc" : null } }
+```
 
 produced by this XSLT
 
-<pre lang="xml"><xsl:key name="names" match="*" use="concat(generate-id(..),'/',name())"/>
+```xml
+<xsl:key name="names" match="*" use="concat(generate-id(..),'/',name())"/>
 
 <xsl:template match="/">
     <xsl:text>{ </xsl:text>
@@ -595,17 +690,21 @@ produced by this XSLT
     </xsl:if>
 </xsl:template>
 
-<!-- assumes the template for text() is present here --></pre>
+<!-- assumes the template for text() is present here -->
+```
 
 In style 2 this is still an ordered list as it has to be (see earlier for an explanation as to why) but we can group together the contents of each element to make the JSON more useful.  The same example translates to
 
-<pre lang="javascript">{ "e" : "outer", "c" : [ { "e" : "aa", "c" : { "e" : "i1", "$" : "in" }, 
+```javascript
+{ "e" : "outer", "c" : [ { "e" : "aa", "c" : { "e" : "i1", "$" : "in" }, 
 "$" : [ 1, 2 ] }, { "e" : "bb" }, { "e" : "aa", "c" : { "e" : "i2" } }, 
-{ "e" : "bb", "$" : false }, { "e" : "cc" } ] }</pre>
+{ "e" : "bb", "$" : false }, { "e" : "cc" } ] }
+```
 
 produced by this XSLT
 
-<pre lang="xml"><xsl:template match="*">
+```xml
+<xsl:template match="*">
     <xsl:text>{ "e" : "</xsl:text>
     <xsl:value-of select="name()"/>
     <xsl:text>"</xsl:text>
@@ -639,7 +738,8 @@ produced by this XSLT
     </xsl:if>
 </xsl:template>
 
-<!-- assumes the template for text() is present here --></pre>
+<!-- assumes the template for text() is present here -->
+```
 
 <h3>Attributes</h3>
 
@@ -653,19 +753,26 @@ Finally, just a note that attributes too can contain numbers, booleans or text a
 
 The following example
 
-<pre lang="xml"><aa at1="1" at2="second" /></pre>
+```xml
+<aa at1="1" at2="second" />
+```
 
 can have attributes at a lower level with a standard key to find them:
 
-<pre lang="javascript">{ "e" : "aa", "@" : { "at1" : 1, "at2" : second } }</pre>
+```javascript
+{ "e" : "aa", "@" : { "at1" : 1, "at2" : second } }
+```
 
 or
 
-<pre lang="javascript">{ "aa" : null, "@" : { "at1" : 1, "at2" : second } }</pre>
+```javascript
+{ "aa" : null, "@" : { "at1" : 1, "at2" : second } }
+```
 
 produced by this XSLT (some code removed for readability)
 
-<pre lang="xml"><xsl:template match="*">
+```xml
+<xsl:template match="*">
     <!-- code removed for readability -->
     <xsl:variable name="actr" select="count(@*)"/>
     <xsl:choose>
@@ -706,19 +813,25 @@ produced by this XSLT (some code removed for readability)
     <xsl:if test="position() != last()">
         <xsl:text>, </xsl:text>
     </xsl:if>        
-</xsl:template></pre>
+</xsl:template>
+```
 
 or at the same level with a prefix to distinguish them
 
-<pre lang="javascript">{ "e", "aa", "@at1" : 1, "@at2" : "second" }</pre>
+```javascript
+{ "e", "aa", "@at1" : 1, "@at2" : "second" }
+```
 
 or
 
-<pre lang="javascript">{ "aa" : null, "@at1" : 1, "@at2" : "second" }</pre>
+```javascript
+{ "aa" : null, "@at1" : 1, "@at2" : "second" }
+```
 
 produced by this XSLT (some code removed for readability)
 
-<pre lang="xml"><xsl:template match="*">
+```xml
+<xsl:template match="*">
     <!-- code removed for readability -->
     <xsl:if test="count(@*) > 0">
         <xsl:text>, </xsl:text>
@@ -751,7 +864,8 @@ produced by this XSLT (some code removed for readability)
     <xsl:if test="position() != last()">
         <xsl:text>, </xsl:text>
     </xsl:if>        
-</xsl:template></pre>
+</xsl:template>
+```
 
 Changing this to be at the same level with no prefix is a trivial amendment to the above code.
 
@@ -767,18 +881,24 @@ Finally, depending on what options you choose, some optimisations are possible. 
 
 For a start we need to tell the XSLT processor that the output is text not XML, otherwise it will try to be helpful and insert some XML headers it believes are missing.  We could also set it to automatically indent the output.  Both of those are set like this:
 
-<pre lang="xml"><xsl:output method="text" encoding="utf-8" indent="yes" /></pre>
+```xml
+<xsl:output method="text" encoding="utf-8" indent="yes" />
+```
 
 Next to tackle is the oddity of XML whitespace.  If we have an XML document that looks like this
 
-<pre lang="xml"><outer>
+```xml
+<outer>
     <inner>
     </inner>
-</outer></pre>
+</outer>
+```
 
 Then the XSLT by default will see three pieces of text each containing just a linefeed (whatever OS you use) unless you do something about it.  The following directive in the XSLT deals with this:
 
-<pre lang="xml"><xsl:strip-space elements="*" /></pre>
+```xml
+<xsl:strip-space elements="*" />
+```
 
 If you dont want to preserve namespaces and would rather drop the namespace prefix then replace all instances of <code lang="javascript">name()</code> with <code lang="javascript">local-name()</code>
 
@@ -786,7 +906,8 @@ If you dont want to preserve namespaces and would rather drop the namespace pref
 
 To help you construct a full XSLT here are a couple of full examples.  This is one for style 1 unordered
 
-<pre lang="xml"><?xml version="1.0" encoding="UTF-8"?>
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     version="1.0">
 
@@ -945,11 +1066,13 @@ To help you construct a full XSLT here are a couple of full examples.  This is o
         </xsl:if>        
     </xsl:template>
         
-</xsl:stylesheet></pre>
+</xsl:stylesheet>
+```
 
 and here is one for style 2 unordered
 
-<pre lang="xml"><?xml version="1.0" encoding="UTF-8"?>
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     version="1.0">
 
@@ -1059,4 +1182,5 @@ and here is one for style 2 unordered
         </xsl:if>        
     </xsl:template>
         
-</xsl:stylesheet></pre>
+</xsl:stylesheet>
+```
