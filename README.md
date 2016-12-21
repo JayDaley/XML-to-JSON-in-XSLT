@@ -1,3 +1,5 @@
+{info:title=Info for redirected users}This was first published on my blog at controlfreak.net in March 2011 but since December 2016 has redirected to this GitHub page{info}
+
 <h3>Introduction</h3>
 
 There isn't a single translation for XML to JSON but several, each with different characteristics.  Choosing the right one depends largely on two things, the XML that you want to translate and how you will write code to manipulate the JSON.  If you set certain standards for the XML you will be using then this can simplify the JSON produced and make it easier to manipulate.
