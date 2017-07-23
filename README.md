@@ -17,7 +17,7 @@ Given the wide variety of ways to encode XML as JSON, these goals narrow down th
 <ul><li>Elements are encapsulated as JSON objects.</li>
 <li>The translations are reversible (with the exception of ordering if you decide to drop that). I'm not going to cover how to do the reverse translation as this is focused on XSLT and that can only process XML.</li></ul></li>
 
-<li>The code needs to comply with the XSLT 1.0 spec not the 2.0 spec.  While using 2.0 would be easier, at the time of writing it is basically only supported in one open source processor, Saxon, which limits its usefulness.</li>
+<li>The code needs to comply with the XSLT 1.0 spec not the 2.0 spec.  While using 2.0 would be easier, at the time of writing (2011) it is basically only supported in one open source processor, Saxon, which limits its usefulness.</li>
 
 <li>Namespaces are transparent, which means that element/attribute names with namespaces have those namespaces preserved, but namespace directives are ignored and do not make it into the JSON.</li>
 </ol>
@@ -32,7 +32,7 @@ Style 1 is where the where the developer knows what JSON to expect and will be a
 { element : { child elements , "$" : text, attributes } }
 ```
 
-Style 2 is where the element and attribute names are not well known and need to be discovered.  We could use the convention of the translation to allow the developer to quickly discover element, attributes and content or we could using well known keys to guarantee that these parts can be discovered quickly like this
+Style 2 is where the element and attribute names are not well known and need to be discovered.  We could use the convention of the translation to allow the developer to quickly discover element, attributes and content or we could use well known keys to guarantee that these parts can be discovered quickly like this
 
 ```javascript
 { "e" : element, "c" : { child elements }, "$" : text, "@" : { attributes } }
@@ -58,7 +58,7 @@ To complicate things there are a number of characteristics of your XML, which if
 
 <h3>Element names</h3>
 
-The choice here is between element names becoming keys or element names becoming the value of a well known key (like "e").  Here is an example of an element and the two representations:
+The choice here is between element names becoming keys, or element names becoming the value of a well known key (like "e").  Here is an example of an element and the two representations:
 
 ```xml
 <myelement>...</myelement>
@@ -120,7 +120,7 @@ produced by this XSLT
 </xsl:template>
 ```
 
-in style 2 the simplest thing to do is just omit whatever keys hold the content.  If you insist on identifying empty elements with well known keys then it tranlates to (though you need to choose whether to make null the value for "c" or "$" or both)
+in style 2 the simplest thing to do is just omit whatever keys hold the content.  If you insist on identifying empty elements with well known keys then it translates to the following (though you need to choose whether to make null the value for "c" or "$" or both)
 
 ```javascript
 { "e" : "empty", "c" : null }
@@ -208,7 +208,7 @@ In style 1 we could simplify text only nodes by making the text the value of the
 <textelement>some text</textelement>
 ```
 
-in style 1 the simplified version translates as
+in style 1 the simplified version translates to
 
 ```javascript
 { "textelement" : "some text" }
@@ -242,9 +242,9 @@ produced by the following XSLT
 
 <h3>Multiple text</h3>
 
-It is possible to have more that one piece of text inside an XML element, each one of which will be returned independently by XSLT.  If you use a well known key for text values then you can theoretically reuse it multiple times as keys in JSON do not need to unique (see RFC 4627 section 2.2 if you don't believe me), but most JSON libraries will probably not support that so I'm not going to illustrate that option.
+It is possible to have more that one piece of text inside an XML element, each one of which will be returned independently by XSLT.  If you use a well known key for text values then you can theoretically reuse it multiple times as keys in JSON do not need to be unique (see RFC 4627 section 2.2 if you don't believe me), but most JSON libraries will probably not support that so I'm not going to illustrate that option.
 
-Instead the two options to looks at are combine all the text together or representing them individually in a list.
+Instead the two options to look at 1) are combine all the text together; or 2) represent them individually in a list.
 
 For example, the text in
 
@@ -420,7 +420,7 @@ produced by this XSLT
 
 <h3>Multiple child elements, numbers, booleans and text - ordered</h3>
 
-Many business applications of XML that are intended to contain structured data don't mix child elements and text so you may be able to get away without dealing with mixed child elements and text, but if not then the main consideration is whether or not you want the ordering preserved or not.
+Many business applications of XML that are intended to contain structured data don't mix child elements and text so you may be able to get away without dealing with mixed child elements and text, but if not then the main consideration is whether or not you want the ordering preserved.
 
 If the ordering is to be preserved then we create an ordered list of all of the contents.  Take the following ordered example:
 
